@@ -95,6 +95,7 @@ void setup() {
     
     Serial.println("Updating internal sensor offsets...");
     // -76  -2359 1688  0 0 0
+    // FACEDOWN: -2042, -3182, 1604, 0, 0, 0
     Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
     Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
     Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
@@ -146,8 +147,15 @@ void loop() {
         Serial.write((uint8_t)(gz >> 8)); Serial.write((uint8_t)(gz & 0xFF));
     #endif
 
+
+    //ADD IN LATER--------------------------------
+    /*
+    #ifdef PRINTTOPLOTTER
+      printDataForArduinoPlotter(&Serial);
+    #endif
+    */
     // blink LED to indicate activity
     blinkState = !blinkState;
     digitalWrite(LED_PIN, blinkState);
-    delay(100);
+    delay(75);
 }
