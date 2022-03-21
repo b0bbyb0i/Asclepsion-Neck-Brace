@@ -53,6 +53,10 @@ int16_t gx, gy, gz;
 #define LED_PIN 13
 bool blinkState = false;
 
+// [count up the number of samples
+int sampleCount = 1;
+
+
 void setup() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -104,7 +108,7 @@ void setup() {
     */
 
     // [title the columns
-    Serial.println("X-accel,Y-accel,Z-accel,X-gyro,Y-gyro,Z-gyro");
+    Serial.println("Sample-Count,X-accel,Y-accel,Z-accel,Net-accel,X-gyro,Y-gyro,Z-gyro,Sample delay 50 ms");
     
     // configure Arduino LED pin for output
     pinMode(LED_PIN, OUTPUT);
@@ -121,12 +125,16 @@ void loop() {
     #ifdef OUTPUT_READABLE_ACCELGYRO
         // display comma-separated accel/gyro x/y/z values
         // Serial.print("a/g:\t");
-        Serial.print(ax); Serial.print(",");
-        Serial.print(ay); Serial.print(",");
-        Serial.print(az); Serial.print(",");
-        Serial.print(gx); Serial.print(",");
-        Serial.print(gy); Serial.print(",");
+        Serial.print(sampleCount);                          Serial.print(",");
+        Serial.print(ax);                                   Serial.print(",");
+        Serial.print(ay);                                   Serial.print(",");
+        Serial.print(az);                                   Serial.print(",");
+        Serial.print(sqrt(pow(ax,2)+pow(ay,2)+pow(az,2)));  Serial.print(","); // [Net acceleration
+        Serial.print(gx);                                   Serial.print(",");
+        Serial.print(gy);                                   Serial.print(",");
         Serial.println(gz);
+
+        sampleCount++;
     #endif
 
     #ifdef OUTPUT_BINARY_ACCELGYRO
@@ -148,5 +156,6 @@ void loop() {
     // blink LED to indicate activity
     blinkState = !blinkState;
     digitalWrite(LED_PIN, blinkState);
-    delay(75);
+    // [Pretty sure this changes sample size, so I mess with it
+    delay(50);
 }
