@@ -56,6 +56,9 @@ bool blinkState = false;
 // [count up the number of samples
 int sampleCount = 1;
 
+// [second between samples in milliseconds
+int delayMs = 25;
+
 
 void setup() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
@@ -108,7 +111,8 @@ void setup() {
     */
 
     // [title the columns
-    Serial.println("Sample-Count,X-accel,Y-accel,Z-accel,Net-accel,X-gyro,Y-gyro,Z-gyro,Sample delay 50 ms");
+    Serial.print("Sample-Count,X-accel,Y-accel,Z-accel,Net-accel,X-gyro,Y-gyro,Z-gyro,Sample delay ");
+    Serial.print(delayMs); Serial.println(" ms");
     
     // configure Arduino LED pin for output
     pinMode(LED_PIN, OUTPUT);
@@ -157,5 +161,5 @@ void loop() {
     blinkState = !blinkState;
     digitalWrite(LED_PIN, blinkState);
     // [Pretty sure this changes sample size, so I mess with it
-    delay(50);
+    delay(delayMs);
 }
