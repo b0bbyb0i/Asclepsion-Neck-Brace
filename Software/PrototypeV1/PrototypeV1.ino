@@ -50,13 +50,15 @@ int16_t gx, gy, gz;
 // for a human.
 //#define OUTPUT_BINARY_ACCELGYRO
 
+// [uncomment "OUTPUT_PLOTTER" to remove extra text and plot using Arduino
+// [serial monitor.
+#define OUTPUT_PLOTTER
+
 #define LED_PIN 13
 bool blinkState = false;
 
-// [count up the number of samples
-int sampleCount = 1;
-
-// [second between samples in milliseconds
+// [for easier plotting
+int totalMs = 0;
 int delayMs = 25;
 
 
@@ -111,8 +113,11 @@ void setup() {
     */
 
     // [title the columns
-    Serial.print("Sample-Count,X-accel,Y-accel,Z-accel,Net-accel,X-gyro,Y-gyro,Z-gyro,Sample delay ");
-    Serial.print(delayMs); Serial.println(" ms");
+    #ifdef OUTPUT_PLOTTER
+      Serial.print("Net-accel");
+    #else
+      Serial.print("Total-Ms,X-accel,Y-accel,Z-accel,Net-accel,X-gyro,Y-gyro,Z-gyro");
+    #endif
     
     // configure Arduino LED pin for output
     pinMode(LED_PIN, OUTPUT);
@@ -129,16 +134,20 @@ void loop() {
     #ifdef OUTPUT_READABLE_ACCELGYRO
         // display comma-separated accel/gyro x/y/z values
         // Serial.print("a/g:\t");
-        Serial.print(sampleCount);                          Serial.print(",");
-        Serial.print(ax);                                   Serial.print(",");
-        Serial.print(ay);                                   Serial.print(",");
-        Serial.print(az);                                   Serial.print(",");
-        Serial.print(sqrt(pow(ax,2)+pow(ay,2)+pow(az,2)));  Serial.print(","); // [Net acceleration
-        Serial.print(gx);                                   Serial.print(",");
-        Serial.print(gy);                                   Serial.print(",");
-        Serial.println(gz);
+        #ifdef OUTPUT_PLOTTER
+          Serial.print(sqrt(pow(ax,2)+pow(ay,2)+pow(az,2)));  Serial.println(","); // [Net acceleration
+        #else
+          Serial.print(totalMs);                              Serial.print(",");
+          Serial.print(ax);                                   Serial.print(",");
+          Serial.print(ay);                                   Serial.print(",");
+          Serial.print(az);                                   Serial.print(",");
+          Serial.print(sqrt(pow(ax,2)+pow(ay,2)+pow(az,2)));  Serial.print(","); // [Net acceleration
+          Serial.print(gx);                                   Serial.print(",");
+          Serial.print(gy);                                   Serial.print(",");
+          Serial.println(gz);
+        #endif
 
-        sampleCount++;
+        totalMs += delayMs;
     #endif
 
     #ifdef OUTPUT_BINARY_ACCELGYRO
