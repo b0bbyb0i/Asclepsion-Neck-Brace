@@ -52,7 +52,7 @@ int16_t gx, gy, gz;
 
 // [uncomment "OUTPUT_PLOTTER" to remove extra text and plot using Arduino
 // [serial monitor.
-#define OUTPUT_PLOTTER
+//#define OUTPUT_PLOTTER
 
 #define LED_PIN 13
 bool blinkState = false;
