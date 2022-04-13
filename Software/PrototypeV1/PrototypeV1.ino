@@ -2,6 +2,7 @@
 // [Based on MPU6050_raw example from this kind gentleman mentioned below, refer to it for in-depth explanation
 // [All my comments start with these brackets, Mr. Rowberg's are left as is
 // [Use zeroing example to find offsets
+// [Includes a peak detection library, the Github is pretty informative
 
 /* ============================================
 I2Cdev device library code is placed under the MIT license
@@ -29,6 +30,7 @@ THE SOFTWARE.
 
 #include "I2Cdev.h"
 #include "MPU6050.h"
+#include <PeakDetection.h>
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     #include "Wire.h"
@@ -52,14 +54,17 @@ int16_t gx, gy, gz;
 
 // [uncomment "OUTPUT_PLOTTER" to remove extra text and plot using Arduino
 // [serial monitor.
-//#define OUTPUT_PLOTTER
+#define OUTPUT_DATA_SMOOTHED
 
 #define LED_PIN 13
 bool blinkState = false;
 
 // [for easier plotting
 int totalMs = 0;
-int delayMs = 25;
+int delayMs = 15;
+
+// [For peak detection
+PeakDetection peakDetection;
 
 
 void setup() {
@@ -72,6 +77,10 @@ void setup() {
 
     // initialize serial communication
     Serial.begin(38400);
+
+    while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+    }
 
     // initialize device [REMOVED SERIAL]
     // Serial.println("Initializing I2C devices...");
@@ -113,15 +122,20 @@ void setup() {
     */
 
     // [title the columns
-    #ifdef OUTPUT_PLOTTER
-      Serial.print("Net-accel");
+    #ifdef OUTPUT_DATA_SMOOTHED
+      Serial.println("Net-accel,Peak,Smoothed");
     #else
-      Serial.print("Total-Ms,X-accel,Y-accel,Z-accel,Net-accel,X-gyro,Y-gyro,Z-gyro");
+      Serial.println("Total-Ms,X-accel,Y-accel,Z-accel,Net-accel,X-gyro,Y-gyro,Z-gyro");
     #endif
     
     // configure Arduino LED pin for output
     pinMode(LED_PIN, OUTPUT);
+
+    // [Configure peak detection: input lag, threshold, influence
+    peakDetection.begin(40, 7, 1.5);
 }
+
+
 
 void loop() {
     // read raw accel/gyro measurements from device
@@ -134,8 +148,14 @@ void loop() {
     #ifdef OUTPUT_READABLE_ACCELGYRO
         // display comma-separated accel/gyro x/y/z values
         // Serial.print("a/g:\t");
-        #ifdef OUTPUT_PLOTTER
-          Serial.print(sqrt(pow(ax,2)+pow(ay,2)+pow(az,2)));  Serial.println(","); // [Net acceleration
+        #ifdef OUTPUT_DATA_SMOOTHED
+          double data = sqrt(pow(ax,2)+pow(ay,2)+pow(az,2));
+          peakDetection.add(data);
+          int peak = peakDetection.getPeak();
+          double filtered = peakDetection.getFilt();
+          Serial.print(data);               Serial.print(","); // [Net acceleration
+          Serial.print((peak*10000));       Serial.print(",");
+          Serial.print(filtered);           Serial.println(",");
         #else
           Serial.print(totalMs);                              Serial.print(",");
           Serial.print(ax);                                   Serial.print(",");
